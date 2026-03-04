@@ -1,5 +1,9 @@
 # MSGNav: Unleashing the Power of Multi-modal 3D Scene Graph for Zero-Shot Embodied Navigation
 
+<p align="center">
+  <a href="https://arxiv.org/abs/2511.10376"><b>CVPR 2026</b></a>
+</p>
+
 <div align="center">
   <img src="Figs/teaser.png" width="900" />
 </div>
