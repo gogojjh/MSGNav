@@ -38,11 +38,7 @@ For example, if your download path is `/your_path/hm3d/` and it contains:
 - `/your_path/hm3d/train/`
 - `/your_path/hm3d/val/`
 
-then you can set `scene_data_path` in the config files as:
-
-```bash
-/your_path/hm3d/
-```
+then you can set `scene_data_path = /your_path/hm3d/` in the config files.
 
 Step2: Please also prepare evaluation episodes and set `test_data_dir`:
 
@@ -53,9 +49,7 @@ Step2: Please also prepare evaluation episodes and set `test_data_dir`:
     - `data/goat_bench/val_unseen/content/`
 - HM3D-ObjNav challenge episodes:
   - Download reference: [Habitat Challenge 2022](https://aihabitat.org/challenge/2022/)
-  - After download/unzip, set `test_data_dir` in `cfg/eval_hm3d.yaml` to the HM3D challenge episode `content/` directory (for example, your local `HM-Challenge-content` path).
-
-`run_goatbench_evaluation.py` and `run_hm3d_evaluation.py` both read scene episode JSON files directly from `test_data_dir`.
+  - After download/unzip, set `test_data_dir` in `cfg/eval_hm3d.yaml` to the HM3D challenge episode `content/` directory.
 
 ### 2) OpenAI API Setup
 
