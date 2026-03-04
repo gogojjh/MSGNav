@@ -47,12 +47,12 @@ then you can set `scene_data_path = /your_path/hm3d/` in the config files.
 Step2: Please also prepare evaluation episodes and set `test_data_dir`:
 
 - GOAT-Bench episodes:
-  - Download reference: [GOAT-Bench repository](https://github.com/Ram81/goat-bench)
+  - Download reference: [GOAT-Bench](https://github.com/Ram81/goat-bench)
   - After download/unzip, set `test_data_dir` in `cfg/eval_goatbench.yaml` to the episode `content/` directory.
   - This repo currently defaults to:
     - `data/goat_bench/val_unseen/content/`
 - HM3D-ObjNav challenge episodes:
-  - Download reference: [Habitat Challenge 2022](https://aihabitat.org/challenge/2022/)
+  - Download reference: [HM3D (Habitat Challenge 2022)](https://aihabitat.org/challenge/2022/)
   - After download/unzip, set `test_data_dir` in `cfg/eval_hm3d.yaml` to the HM3D challenge episode `content/` directory.
 
 ### 2) OpenAI API Setup
