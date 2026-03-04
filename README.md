@@ -8,7 +8,7 @@
 
 ## 📰 News
 
-- [Coming Soon] 🤖 Deployment code for Unitree G1 will be released.
+- [Coming Soon] 🤖 Real-world deployment code for Unitree-G1 will be released.
 - [Mar 4, 2026] 🚀 Code is released.
 - [Feb 21, 2026] 🎉 MSGNav is accepted to CVPR 2026.
 
@@ -26,7 +26,7 @@ pip install omegaconf==2.3.0 open-clip-torch==2.26.1 ultralytics==8.2.31 supervi
 
 ## 1 - Preparations
 
-### Dataset
+### 1) Dataset
 
 Step1: Please download the train and val split of [HM3D](https://aihabitat.org/datasets/hm3d-semantics/), and specify the path in:
 
@@ -57,7 +57,7 @@ Step2: Please also prepare evaluation episodes and set `test_data_dir`:
 
 `run_goatbench_evaluation.py` and `run_hm3d_evaluation.py` both read scene episode JSON files directly from `test_data_dir`.
 
-### OpenAI API Setup
+### 2) OpenAI API Setup
 
 Please set up the endpoint and API key in `src/const.py`:
 
@@ -138,15 +138,7 @@ Key arguments:
 
 ## 3 - Visualization
 
-You can control visualization saving by setting `save_visualization` in:
-
-- `cfg/eval_hm3d.yaml`
-- `cfg/eval_goatbench.yaml`
-
-Recommended usage:
-
-- `save_visualization: false` for faster large-scale evaluation.
-- `save_visualization: true` when you need qualitative inspection and case analysis.
+You can control visualization saving by setting `save_visualization` in `yaml` (This will result in slower inference). 
 
 When visualization is enabled, the evaluation pipeline saves:
 
@@ -163,3 +155,20 @@ Visualization examples (`save_visualization: true`):
 <div align="center">
   <img src="Figs/vis2.png" width="1000" />
 </div>
+
+## Acknowledgement
+
+The codebase is built upon [3D-Mem](https://github.com/UMass-Embodied-AGI/3D-Mem) and [Concept-Graph](https://github.com/concept-graphs/concept-graphs). We thank the authors for their great work.
+
+## Citation
+
+If you find our work helpful, please cite:
+
+```bibtex
+@article{MSGNav,
+  title={MSGNav: Unleashing the Power of Multi-modal 3D Scene Graph for Zero-Shot Embodied Navigation},
+  author={Huang, Xun and Zhao, Shijia and Wang, Yunxiang and Lu, Xin and Zhang, Wanfa and Qu, Rongsheng and Li, Weixin and Wang, Yunhong and Wen, Chenglu},
+  journal={arXiv preprint arXiv:2511.10376},
+  year={2025}
+}
+```
