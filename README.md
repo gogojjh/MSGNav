@@ -5,4 +5,6 @@
 </div>
 
 ## 📰 News
-- [Feb 21, 2026] 🎉 MSGNav has been accepted to CVPR 2026. The code will be released before March 16.
+- [Coming Soon] 🤖 Deployment code for Unitree G1 will be released.
+- [Mar 4, 2026] 🚀 Code is released.
+- [Feb 21, 2026] 🎉 MSGNav is accepted to CVPR 2026.
