@@ -1,10 +1,9 @@
 # MSGNav: Unleashing the Power of Multi-modal 3D Scene Graph for Zero-Shot Embodied Navigation
 
-<div align="center">
-  <img src="teaser.png", width="800" />
-</div>
+
 
 ## 📰 News
+
 - [Coming Soon] 🤖 Deployment code for Unitree G1 will be released.
 - [Mar 4, 2026] 🚀 Code is released.
 - [Feb 21, 2026] 🎉 MSGNav is accepted to CVPR 2026.
@@ -20,3 +19,121 @@ conda install https://anaconda.org/pytorch3d/pytorch3d/0.7.4/download/linux-64/p
 pip install omegaconf==2.3.0 open-clip-torch==2.26.1 ultralytics==8.2.31 supervision==0.21.0 opencv-python-headless==4.10.0.84 \
  scikit-learn==1.4 scikit-image==0.22 open3d==0.18.0 hipart==1.0.4 openai==1.35.3 httpx==0.27.2 numpy==1.24.3 scipy==1.11.4 ollama
 ```
+
+## 1 - Preparations
+
+### Dataset
+
+Step1: Please download the train and val split of [HM3D](https://aihabitat.org/datasets/hm3d-semantics/), and specify the path in:
+
+- `cfg/eval_hm3d.yaml`
+- `cfg/eval_goatbench.yaml`
+
+For example, if your download path is `/your_path/hm3d/` and it contains:
+
+- `/your_path/hm3d/train/`
+- `/your_path/hm3d/val/`
+
+then you can set `scene_data_path` in the config files as:
+
+```bash
+/your_path/hm3d/
+```
+
+Step2: Please also prepare evaluation episodes and set `test_data_dir`:
+
+- GOAT-Bench episodes:
+  - Download reference: [GOAT-Bench repository](https://github.com/Ram81/goat-bench)
+  - After download/unzip, set `test_data_dir` in `cfg/eval_goatbench.yaml` to the episode `content/` directory.
+  - This repo currently defaults to:
+    - `data/goat_bench/val_unseen/content/`
+- HM3D-ObjNav challenge episodes:
+  - Download reference: [Habitat Challenge 2022](https://aihabitat.org/challenge/2022/)
+  - After download/unzip, set `test_data_dir` in `cfg/eval_hm3d.yaml` to the HM3D challenge episode `content/` directory (for example, your local `HM-Challenge-content` path).
+
+`run_goatbench_evaluation.py` and `run_hm3d_evaluation.py` both read scene episode JSON files directly from `test_data_dir`.
+
+### OpenAI API Setup
+
+Please set up the endpoint and API key in `src/const.py`:
+
+```python
+Qwen_END_POINT = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+Qwen_OPENAI_KEY = "YOUR_QWEN_API_KEY"
+
+GPT_END_POINT = "YOUR_GPT_ENDPOINT"
+GPT_OPENAI_KEY = "YOUR_GPT_API_KEY"
+```
+
+Model selection is controlled by the `model` parameter in `src/explore_utils.py`:
+
+```python
+def call_openai_api(sys_prompt, contents, model='qwen'):
+    ...
+```
+
+- Use Qwen: keep `model='qwen'` (default), or call `call_openai_api(..., model='qwen')`.
+- Use GPT: call `call_openai_api(..., model='gpt')`.
+
+## 2 - Run Evaluation
+
+### 1) HM3D single process
+
+Default (run all scenes/episodes):
+
+```bash
+python run_hm3d_evaluation.py -cf cfg/eval_hm3d.yaml
+```
+
+Run a ratio subset:
+
+```bash
+python run_hm3d_evaluation.py -cf cfg/eval_hm3d.yaml --start_ratio 0.0 --end_ratio 0.5
+```
+
+### 2) GOAT-Bench single process
+
+Default (run all scenes in the default split):
+
+```bash
+python run_goatbench_evaluation.py -cf cfg/eval_goatbench.yaml
+```
+Run split and ratio:
+
+```bash
+python run_goatbench_evaluation.py -cf cfg/eval_goatbench.yaml --split 1 --start_ratio 0.0 --end_ratio 0.5
+```
+
+### 3) Parallel execution: `start_multiprocess.py`
+
+Use this script to run scene tasks in parallel across multiple GPUs (supports both HM3D and GOAT-Bench):
+
+```bash
+python start_multiprocess.py --task <hm3d|goatbench> --devices 0,1,2,3 --total_episodes 36 --splits 1
+```
+
+Common examples:
+
+```bash
+# HM3D parallel run hm3d
+python start_multiprocess.py --task hm3d --devices 0,1,2,3 --total_episodes 36 --splits 1
+
+
+# GOAT-Bench split and ratio subset of goatbench
+python start_multiprocess.py --task goatbench --devices 0,1 --total_episodes 36 --splits 1 --start_ratio 0.0 --end_ratio 0.5
+```
+
+Key arguments:
+
+- `--task`: `hm3d` or `goatbench`
+- `--devices`: comma-separated GPU ids, e.g. `0,1,2,3`
+- `--total_episodes`: number of scene tasks per split (default: `36`)
+- `--splits`: number of splits (default: `1`)
+- `--start_ratio`, `--end_ratio`: optional ratio range passed to task start scripts
+
+Notes:
+
+- `start_multiprocess.py` dispatches workers via `python -m start_hm3d` or `python -m start_goatbench` according to `--task`.
+- For HM3D, the script keeps the final aggregation pass behavior (`scene_id=-1`) after all workers finish.
+- If your internal run script/config filenames differ, update the `os.system(...)` command in `start_hm3d.py` / `start_goatbench.py`.
+

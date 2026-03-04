@@ -1,34 +1,159 @@
+import argparse
 import multiprocessing
+import queue
 import subprocess
-from multiprocessing import Manager
+import sys
 
-def dynamic_scene_process(process_id, device_id, total_processes, start_ratio = 0.0, end_ratio = 1.0):  
-    while not task_queue.empty():
-        task_id = task_queue.get(block=True)
-        t = subprocess.Popen(
-            ["python", "-m", "start_hm3d", str(task_id % 36), str(device_id), str(start_ratio), str(end_ratio), str(int(task_id / 36) + 1)],
+
+def parse_devices(devices_arg: str):
+    return [int(device.strip()) for device in devices_arg.split(",") if device.strip()]
+
+
+def dynamic_scene_process(
+    worker_id,
+    device_id,
+    total_episodes,
+    task_type,
+    hm3d_module,
+    goatbench_module,
+    task_queue,
+    start_ratio=0.0,
+    end_ratio=1.0,
+):
+    print(f"[worker-{worker_id}] start on cuda:{device_id}", flush=True)
+    while True:
+        try:
+            task_id = task_queue.get_nowait()
+        except queue.Empty:
+            break
+
+        scene_id = task_id % total_episodes
+        split_id = int(task_id / total_episodes) + 1
+        if task_type == "hm3d":
+            cmd = [
+                sys.executable,
+                "-m",
+                hm3d_module,
+                str(scene_id),
+                str(device_id),
+                str(start_ratio),
+                str(end_ratio),
+            ]
+        else:
+            cmd = [
+                sys.executable,
+                "-m",
+                goatbench_module,
+                str(scene_id),
+                str(device_id),
+                str(start_ratio),
+                str(end_ratio),
+                str(split_id),
+            ]
+        print(
+            f"[worker-{worker_id}] run task_id={task_id}, scene={scene_id}, split={split_id}, device={device_id}",
+            flush=True,
         )
-        t.wait()
+        subprocess.run(cmd, check=False)
 
-if __name__ == "__main__":  
-    #devices = [0,1,2,7]
-    devices = [0,1,2,3,4,5,6]
-    total_episodes = 36
-    processes = []
-    
+    print(f"[worker-{worker_id}] finished", flush=True)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run HM3D/GOAT-Bench tasks in parallel.")
+    parser.add_argument(
+        "--task",
+        type=str,
+        choices=["hm3d", "goatbench"],
+        default="hm3d",
+        help="Task type for parallel execution.",
+    )
+    parser.add_argument(
+        "--devices",
+        type=str,
+        default="0,1,2,3,4,5,6",
+        help="Comma-separated GPU ids, e.g. 0,1,2,3",
+    )
+    parser.add_argument(
+        "--total_episodes",
+        type=int,
+        default=36,
+        help="Number of scene tasks per split.",
+    )
+    parser.add_argument(
+        "--splits",
+        type=int,
+        default=1,
+        help="Number of splits to run.",
+    )
+    parser.add_argument(
+        "--start_ratio",
+        type=float,
+        default=0.0,
+        help="Start ratio passed to task start script.",
+    )
+    parser.add_argument(
+        "--end_ratio",
+        type=float,
+        default=1.0,
+        help="End ratio passed to task start script.",
+    )
+    parser.add_argument(
+        "--hm3d_module",
+        type=str,
+        default="start_hm3d",
+        help="Python module name used when --task hm3d.",
+    )
+    parser.add_argument(
+        "--goatbench_module",
+        type=str,
+        default="start_goatbench",
+        help="Python module name used when --task goatbench.",
+    )
+    args = parser.parse_args()
+
+    devices = parse_devices(args.devices)
+    if len(devices) == 0:
+        raise ValueError("No valid GPU id provided in --devices.")
+
+    total_episodes = args.total_episodes
+    splits = args.splits
+
     task_queue = multiprocessing.Queue()
-    
-    splits = 1
-    [task_queue.put(i) for i in range(0, total_episodes * splits)]
-    pool = multiprocessing.Pool(processes = len(devices))
-    for i in range(len(devices)):  
-        pool.apply_async(dynamic_scene_process, (i, devices[i], len(devices)))
-    
-    
-    pool.close()
-    pool.join()
+    for i in range(total_episodes * splits):
+        task_queue.put(i)
 
-    t = subprocess.Popen(
-            ["python", "-m", "start_hm3d", str(-1), str(devices[0]), str(0.0), str(1.0), str(1)],
+    workers = []
+    for worker_id, device_id in enumerate(devices):
+        p = multiprocessing.Process(
+            target=dynamic_scene_process,
+            args=(
+                worker_id,
+                device_id,
+                total_episodes,
+                args.task,
+                args.hm3d_module,
+                args.goatbench_module,
+                task_queue,
+                args.start_ratio,
+                args.end_ratio,
+            ),
         )
-    t.wait()
+        p.start()
+        workers.append(p)
+
+    for p in workers:
+        p.join()
+
+    # Final aggregation pass for hm3d (keeps original behavior).
+    if args.task == "hm3d":
+        final_cmd = [
+            sys.executable,
+            "-m",
+            args.hm3d_module,
+            str(-1),
+            str(devices[0]),
+            str(0.0),
+            str(1.0),
+        ]
+        subprocess.run(final_cmd, check=False)

@@ -116,22 +116,7 @@ def main(cfg, start_ratio=0.0, end_ratio=1.0, specific = None):
     for scene_data_file in scene_data_list:
         with open(os.path.join(cfg.test_data_dir, scene_data_file), "r") as f:
             num_episode += len(json.load(f)["episodes"])
-    mut3d_data_set_path = 'data/ovon/ovon_full_set.json'
-    
-    mtu3d_data_set = json.load(open(mut3d_data_set_path, "r"))['val_unseen']
-
-    mtu3d_set = [(data['scan_id_suffix'] + '.json', data['episode_index']) for data in mtu3d_data_set if (data['scan_id_suffix'] + '.json') in scene_data_list ]
-    selected_num_episode = 0
-    for scene_data_file in scene_data_list:
-        with open(os.path.join(cfg.test_data_dir, scene_data_file), "r") as f:
-            selected_num_episode += len(json.load(f)["episodes"])
-    logging.info(
-        f"Total number of episodes: {num_episode}, Filtered number of episodes: {len(mtu3d_set)}"
-    )
-    num_episode = 0
-    for scene_data_file in scene_data_list:
-        with open(os.path.join(cfg.test_data_dir, scene_data_file), "r") as f:
-            num_episode += len(json.load(f)["episodes"])
+    logging.info(f"Total number of episodes: {num_episode}")
 
     all_scene_ids = os.listdir(cfg.scene_data_path + "/train") + os.listdir(
         cfg.scene_data_path + "/val"
@@ -192,10 +177,6 @@ def main(cfg, start_ratio=0.0, end_ratio=1.0, specific = None):
         for episode_idx, cur_episode in enumerate(scene_data["episodes"]):
             global_episode += 1
 
-
-            # if (scene_data_file, episode_idx) not in mtu3d_set:
-            #     logging.info(f"{scene_data_file}: {episode_idx} not in filtered data list, pass")
-            #     continue
 
             finished_subtask_ids = list(logger.success_by_distance.keys())
             episode_id = cur_episode['episode_id']
