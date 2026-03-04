@@ -1,5 +1,9 @@
 # MSGNav: Unleashing the Power of Multi-modal 3D Scene Graph for Zero-Shot Embodied Navigation
 
+<div align="center">
+  <img src="Figs/teaser.png" width="900" />
+</div>
+
 
 
 ## 📰 News
@@ -131,9 +135,31 @@ Key arguments:
 - `--splits`: number of splits (default: `1`)
 - `--start_ratio`, `--end_ratio`: optional ratio range passed to task start scripts
 
-Notes:
 
-- `start_multiprocess.py` dispatches workers via `python -m start_hm3d` or `python -m start_goatbench` according to `--task`.
-- For HM3D, the script keeps the final aggregation pass behavior (`scene_id=-1`) after all workers finish.
-- If your internal run script/config filenames differ, update the `os.system(...)` command in `start_hm3d.py` / `start_goatbench.py`.
+## 3 - Visualization
 
+You can control visualization saving by setting `save_visualization` in:
+
+- `cfg/eval_hm3d.yaml`
+- `cfg/eval_goatbench.yaml`
+
+Recommended usage:
+
+- `save_visualization: false` for faster large-scale evaluation.
+- `save_visualization: true` when you need qualitative inspection and case analysis.
+
+When visualization is enabled, the evaluation pipeline saves:
+
+- Frontier images (frontier candidates and VLM choice visualization)
+- Top-down map snapshots for each step
+- Scene graph related visual outputs
+
+Visualization examples (`save_visualization: true`):
+
+<div align="center">
+  <img src="Figs/vis1.png" width="1000" />
+</div>
+
+<div align="center">
+  <img src="Figs/vis2.png" width="1000" />
+</div>
