@@ -1,11 +1,12 @@
 # General
 seed: 77
-exp_name: "example_hm3d"
+exp_name: "example_hm3dv2"
 #prompt:all room, prompt may wrong, no repeat decision, no as many as possible and have key objects
 output_parent_dir: "results"
 scene_dataset_config_path: "data/hm3d_annotated_basis.scene_dataset_config.json"
-scene_data_path: "/home/dataset-local/data1/lx22/hsun/hsun/Dataset/data/scene_datasets/hm3d"
-test_data_dir: "/home/dataset-local/data1/lx22/hsun/hsun/Dataset/HM-Challenge-content"
+scene_data_path: "/home/dataset-assist-0/hsun/hsun/previous/Dataset/data/versioned_data/hm3d-0.2/hm3d"
+test_data_dir: "/home/dataset-assist-0/hsun/hsun/previous/Dataset/HM-Challenge-content"
+
 
 concept_graph_config_path: "cfg/concept_graph_default.yaml"
 
@@ -13,7 +14,7 @@ concept_graph_config_path: "cfg/concept_graph_default.yaml"
 choose_every_step: true  # whether to query vlm at each step, or only after arriving at the navigation target
 egocentric_views: true  # whether to add egocentric views when prompting vlm
 prefiltering: true  # whether to use prefiltering (you in fact cannot turn this off, since otherwise it will exceed the context length limit)
-use_AVU: false
+use_AVU: true
 use_ollama: false
 use_room_filter: true 
 use_room_det: true
@@ -74,7 +75,7 @@ img_height: 1280
 hfov: 120
 
 # about goatbench evaluation
-success_distance: 0.25  # the distance threshold for a successful navigation
+success_distance: 1.0  # the distance threshold for a successful navigation
 clear_up_memory_every_subtask: false
 use_full_obj_list: false
 
@@ -100,17 +101,17 @@ margin_w_ratio: 0.25
 margin_h_ratio: 0.6
 planner:
   eps: 1
-  max_dist_from_cur_phase_1: 1  # when the target object is not found, explore the frontiers with this step length
+  max_dist_from_cur_phase_1: 1.8  # move farther each step to avoid local spinning on near frontiers
   max_dist_from_cur_phase_2: 1  # when the target object is found, go to the target object with this step length
   final_observe_distance: 1.5  # in phase 2, find a place that is this far from the target object to observe it
-  surrounding_explored_radius: 0.7
+  surrounding_explored_radius: 1.0
 
   # about frontier selection
   frontier_edge_area_min: 4
   frontier_edge_area_max: 6
   frontier_area_min: 8
   frontier_area_max: 9
-  min_frontier_area: 20  # the frontier should have at least this many pixels
+  min_frontier_area: 10  # the frontier should have at least this many pixels
   max_frontier_angle_range_deg: 150  # the angle spanned by the pixels in a frontier should not be larger than this
   region_equal_threshold: 0.95
 

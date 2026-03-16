@@ -2,8 +2,8 @@ import os
 import re
 
 # Configuration parameters
-folder_path = '/data0/hsun/MSGNav-Release/results/ovon_val_unseen_wo_AVU_qwen0.95_0.75mvvd_fixed'  # Path to log files folder
-new_thresholds = [0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 1.0]
+folder_path = '/home/dataset-assist-0/hsun/hsun/MSGNav/results/merge'  # Path to log files folder
+new_thresholds = [0.25, 1.0]
 for new_threshold in new_thresholds:
     # new_threshold = 0.5  # Alternative distance threshold example
 
@@ -39,6 +39,7 @@ for new_threshold in new_thresholds:
                                 original_success_distances.append(distance)
                             if distance <= new_threshold:
                                 still_success_count += 1
+                            count+=1
                         except ValueError:
                             print(f"Failed to parse distance: {distance_str} in line: {line.strip()}")
 
@@ -53,9 +54,9 @@ for new_threshold in new_thresholds:
                         spl += ans if distance <= new_threshold else 0
 
     # Print results
-    print(f"===== Success statistics (count: {total_original_success}:{still_success_count}) =====")
+    print(f"===== Success statistics (count: {total_original_success}/{count} → {still_success_count}/{count}) =====")
     print(f"Under threshold {new_threshold}: ")
     if total_original_success > 0:
-        ratio = still_success_count / 120 * 100
+        ratio = still_success_count / count * 100
         print(f"Ratio: {ratio:.1f}%")
-        print(f"New global average SPL: {spl/120:.1f}")
+        print(f"New global average SPL: {spl/count:.1f}")

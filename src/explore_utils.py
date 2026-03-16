@@ -46,7 +46,7 @@ def format_content(contents):
 
 
 # send information to openai
-def call_openai_api(sys_prompt, contents, model = 'qwen') -> Optional[str]:
+def call_openai_api(sys_prompt, contents, model = 'gpt') -> Optional[str]:
     max_tries = 5
     retry_count = 0
     
@@ -59,7 +59,7 @@ def call_openai_api(sys_prompt, contents, model = 'qwen') -> Optional[str]:
         try:
             if model == 'gpt':
                 completion = gpt_client.chat.completions.create(
-                    model="gpt-4o-2024-11-20",  # model = "deployment_name"
+                    model="gpt-4o",  # model = "deployment_name"
                     messages=message_text,
                     temperature=0.95,
                     max_tokens=4096,

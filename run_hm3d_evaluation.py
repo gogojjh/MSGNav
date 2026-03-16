@@ -27,7 +27,7 @@ from src.tsdf_planner import TSDFPlanner, Frontier
 from src.multimodal_3d_scene_graph import Scene
 from src.utils import resize_image, calc_agent_subtask_distance, get_pts_angle_goatbench
 from src.query_vlm import query_vlm_for_response, query_vlm_for_response_end
-from src.logger_ovon import Logger
+from src.logger_hm3d import Logger
 import time
 
 class Timer:
@@ -101,6 +101,7 @@ def main(cfg, start_ratio=0.0, end_ratio=1.0, specific = None):
     
     # Load dataset
     scene_data_list = ['4ok3usBNeis.json', '5cdEh9F2hJL.json', '6s7QHgap2fW.json', '7MXmsvcQjpJ.json', 'BAbdmeyTvMZ.json', 'CrMo8WxCyVb.json', 'DYehNKdT76V.json', 'Dd4bFSTQ8gi.json', 'GLAQ4DNUx5U.json', 'HY1NcmCgn3n.json', 'LT9Jq6dN3Ea.json', 'MHPLjHsuG27.json', 'Nfvxx8J5NCo.json', 'QaLdnwvtxbs.json', 'TEEsavR23oF.json', 'VBzV5z6i1WS.json', 'XB4GS9ShBRE.json', 'a8BtkwhxdRV.json', 'bCPU9suPUw9.json', 'bxsVRursffK.json', 'cvZr5TUy5C5.json', 'eF36g7L6Z9M.json', 'h1zeeAwLh9Z.json', 'k1cupFYWXJ6.json', 'mL8ThkuaVTM.json', 'mv2HUxq3B53.json', 'p53SfW6mjZe.json', 'q3zU7Yy5E5s.json', 'q5QZSEeHe5g.json', 'qyAac8rV8Zk.json', 'svBbv1Pavdk.json', 'wcojb4TFT35.json', 'y9hTuugGdiq.json', 'yr17PDCnDDW.json', 'ziup5kvtCCR.json', 'zt1RVoi7PcG.json']
+    scene_data_list = os.listdir(cfg.test_data_dir)
     num_scene = len(scene_data_list)
     random.shuffle(scene_data_list)
     num_episode = 0
@@ -179,12 +180,12 @@ def main(cfg, start_ratio=0.0, end_ratio=1.0, specific = None):
 
 
             finished_subtask_ids = list(logger.success_by_distance.keys())
-            episode_id = cur_episode['episode_id']
+            episode_id = str(episode_idx)
             curr_key = str(scene_id)+'_'+str(episode_id)
 
 
             if curr_key in finished_subtask_ids:
-                logging.info(f"Scene {scene_id} Episode {episode_id} already done!")
+                logging.info(f"Scene {scene_id} Episode {episode_idx} already done!")
                 continue
             
             scene.clear_up_detections()
@@ -464,7 +465,7 @@ def main(cfg, start_ratio=0.0, end_ratio=1.0, specific = None):
                     # save the top-down visualization
                     logger.save_topdown_visualization(
                         global_step=cnt_step,
-                        subtask_id=episode_id,
+                        episode_id=episode_id,
                         subtask_metadata=subtask_metadata,
                         goal_obj_ids_mapping=goal_obj_ids_mapping,
                         fig=fig,
@@ -472,7 +473,7 @@ def main(cfg, start_ratio=0.0, end_ratio=1.0, specific = None):
                     # save the visualization of vlm's choice at each step
                     logger.save_frontier_visualization(
                         global_step=cnt_step,
-                        subtask_id=episode_id,
+                        episode_id=episode_id,
                         tsdf_planner=tsdf_planner,
                         max_point_choice=max_point_choice,
                         global_caption=f"{subtask_metadata['question']}\n{subtask_metadata['task_type']}\n{subtask_metadata['class']}",
