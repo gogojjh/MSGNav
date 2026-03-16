@@ -11,8 +11,9 @@
 
 
 ## 📰 News
-
 - [Coming Soon] 🤖 Real-world deployment code for Unitree-G1 will be released.
+- [Mar 16, 2026] The bug on HM3D evaluation has been fixed, and now you can test it on both GoatBench and HM3D benchmarks
+- [Mar 13, 2026] Note: There are some issues with the evaluation code on HM3D, which are currently being fixed. Please try GoatBench first
 - [Mar 4, 2026] 🚀 Code is released.
 - [Feb 21, 2026] 🎉 MSGNav is accepted to CVPR 2026.
 
