@@ -32,28 +32,28 @@ pip install omegaconf==2.3.0 open-clip-torch==2.26.1 ultralytics==8.2.31 supervi
 
 ### 1) Dataset
 
-Step1: Please download the train and val split of [HM3D](https://aihabitat.org/datasets/hm3d-semantics/), and specify the path in:
+Step1: Please download the val split of [HM3D](https://github.com/matterport/habitat-matterport-3dresearch) (v1 for GoatBench and v2 for HM3D-ObjNav)
 
-- `cfg/eval_hm3d.yaml`
-- `cfg/eval_goatbench.yaml`
 
 For example, if your download path is `/your_path/hm3d/` and it contains:
 
-- `/your_path/hm3d/train/`
-- `/your_path/hm3d/val/`
+- v1: `/your_path/scene_datasets/hm3d/val/`
+- v2: `/your_path/versioned_data/hm3d-0.2/val/`
 
-then you can set `scene_data_path = /your_path/hm3d/` in the config files.
+then you can set `scene_data_path` in the config files:
+
+- `cfg/eval_goatbench.yaml`
+- `cfg/eval_hm3d.yaml`
 
 Step2: Please also prepare evaluation episodes and set `test_data_dir`:
 
 - GOAT-Bench episodes:
   - Download reference: [GOAT-Bench](https://github.com/Ram81/goat-bench)
-  - After download/unzip, set `test_data_dir` in `cfg/eval_goatbench.yaml` to the episode `content/` directory.
-  - This repo currently defaults to:
-    - `data/goat_bench/val_unseen/content/`
+
 - HM3D-ObjNav challenge episodes:
-  - Download reference: [HM3D (Habitat Challenge 2022)](https://aihabitat.org/challenge/2022/)
-  - After download/unzip, set `test_data_dir` in `cfg/eval_hm3d.yaml` to the HM3D challenge episode `content/` directory.
+  - Download reference: [HM3D (data/datasets/objectnav/hm3d/v2/)](https://github.com/facebookresearch/habitat-lab/blob/main/DATASETS.md)
+
+- After download/unzip, set `test_data_dir` in the config files.
 
 ### 2) OpenAI API Setup
 
