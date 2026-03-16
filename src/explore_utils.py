@@ -16,6 +16,7 @@ from src.const import *
 
 
 
+mode = API_MODE
 
 gpt_client = OpenAI(
     base_url=GPT_END_POINT,
@@ -46,7 +47,7 @@ def format_content(contents):
 
 
 # send information to openai
-def call_openai_api(sys_prompt, contents, model = 'gpt') -> Optional[str]:
+def call_openai_api(sys_prompt, contents) -> Optional[str]:
     max_tries = 5
     retry_count = 0
     
@@ -57,7 +58,7 @@ def call_openai_api(sys_prompt, contents, model = 'gpt') -> Optional[str]:
     ]
     while retry_count < max_tries:
         try:
-            if model == 'gpt':
+            if mode == 'gpt':
                 completion = gpt_client.chat.completions.create(
                     model="gpt-4o",  # model = "deployment_name"
                     messages=message_text,

@@ -4,8 +4,8 @@ exp_name: "example_goatbench"
 #prompt:all room, prompt may wrong, no repeat decision, no as many as possible and have key objects
 output_parent_dir: "results"
 scene_dataset_config_path: "data/hm3d_annotated_basis.scene_dataset_config.json"
-scene_data_path: "/home/dataset-local/data1/lx22/hsun/hsun/Dataset/data/scene_datasets/hm3d"
-test_data_dir: "data/goat_bench/val_unseen/content/"
+scene_data_path: "/home/dataset-assist-0/hsun/hsun/previous/Dataset/data/scene_datasets/hm3d/"
+test_data_dir: "/home/dataset-assist-0/wtx/MSGNav/data/goat_bench/val_unseen/content/"
 
 concept_graph_config_path: "cfg/concept_graph_default.yaml"
 
