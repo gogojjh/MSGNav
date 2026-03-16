@@ -12,7 +12,7 @@ def parse_devices(devices_arg: str):
 def dynamic_scene_process(
     worker_id,
     device_id,
-    total_episodes,
+    total_scenes,
     task_type,
     hm3d_module,
     goatbench_module,
@@ -27,8 +27,8 @@ def dynamic_scene_process(
         except queue.Empty:
             break
 
-        scene_id = task_id % total_episodes
-        split_id = int(task_id / total_episodes) + 1
+        scene_id = task_id % total_scenes
+        split_id = int(task_id / total_scenes) + 1
         if task_type == "hm3d":
             cmd = [
                 sys.executable,
@@ -75,7 +75,7 @@ if __name__ == "__main__":
         help="Comma-separated GPU ids, e.g. 0,1,2,3",
     )
     parser.add_argument(
-        "--total_episodes",
+        "--total_scenes",
         type=int,
         default=36,
         help="Number of scene tasks per split.",
@@ -116,11 +116,11 @@ if __name__ == "__main__":
     if len(devices) == 0:
         raise ValueError("No valid GPU id provided in --devices.")
 
-    total_episodes = args.total_episodes
+    total_scenes = args.total_scenes
     splits = args.splits
 
     task_queue = multiprocessing.Queue()
-    for i in range(total_episodes * splits):
+    for i in range(total_scenes * splits):
         task_queue.put(i)
 
     workers = []
@@ -130,7 +130,7 @@ if __name__ == "__main__":
             args=(
                 worker_id,
                 device_id,
-                total_episodes,
+                total_scenes,
                 args.task,
                 args.hm3d_module,
                 args.goatbench_module,

@@ -112,25 +112,25 @@ python run_goatbench_evaluation.py -cf cfg/eval_goatbench.yaml --split 1 --start
 Use this script to run scene tasks in parallel across multiple GPUs (supports both HM3D and GOAT-Bench):
 
 ```bash
-python start_multiprocess.py --task <hm3d|goatbench> --devices 0,1,2,3 --total_episodes 36 --splits 1
+python start_multiprocess.py --task <hm3d|goatbench> --devices 0,1,2,3 --total_scenes 36 --splits 1
 ```
 
 Common examples:
 
 ```bash
-# HM3D parallel run hm3d
-python start_multiprocess.py --task hm3d --devices 0,1,2,3 --total_episodes 36 --splits 1
+# Run the first episode of each scene in the 36 scenes of HM3D in parallel using 4 gpus
+python start_multiprocess.py --task hm3d --devices 0,1,2,3 --total_scenes 36 --splits 1
 
 
-# GOAT-Bench split and ratio subset of goatbench
-python start_multiprocess.py --task goatbench --devices 0,1 --total_episodes 36 --splits 1 --start_ratio 0.0 --end_ratio 0.5
+# Run the first episode of each scene in the 18 scenes (36 * 0.5) of Goatbench in parallel using 2 gpus
+python start_multiprocess.py --task goatbench --devices 0,1 --total_scenes 36 --splits 1 --start_ratio 0.0 --end_ratio 0.5
 ```
 
 Key arguments:
 
 - `--task`: `hm3d` or `goatbench`
 - `--devices`: comma-separated GPU ids, e.g. `0,1,2,3`
-- `--total_episodes`: number of scene tasks per split (default: `36`)
+- `--total_scenes`: number of scene tasks per split (default: `36`)
 - `--splits`: number of splits (default: `1`)
 - `--start_ratio`, `--end_ratio`: optional ratio range passed to task start scripts
 
