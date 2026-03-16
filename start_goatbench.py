@@ -3,7 +3,7 @@ import sys
   
 def main(scene_id, device_id, start_ratio=0.0, end_ratio=1.0, split=1):  
     print(f"Infer Scene {scene_id} with episode {split} on Device {device_id}") 
-    os.system(f'CUDA_VISIBLE_DEVICES={device_id} python run_goatbench_evaluation_qwen.py -cf cfg/eval_goatbench_qwen.yaml --start_ratio {start_ratio} --end_ratio {end_ratio} --specific {scene_id} --split {split}') 
+    os.system(f'CUDA_VISIBLE_DEVICES={device_id} python run_goatbench_evaluation.py -cf cfg/eval_goatbench.yaml --start_ratio {start_ratio} --end_ratio {end_ratio} --specific {scene_id} --split {split}') 
     
 if __name__ == "__main__":  
     if len(sys.argv) > 1:  
