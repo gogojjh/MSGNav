@@ -1,7 +1,7 @@
 # General
 seed: 77
 exp_name: "example_hm3dv2"
-#prompt:all room, prompt may wrong, no repeat decision, no as many as possible and have key objects
+
 output_parent_dir: "results"
 scene_dataset_config_path: "data/hm3d_annotated_basis.scene_dataset_config.json"
 scene_data_path: "/home/dataset-assist-0/hsun/hsun/previous/Dataset/data/versioned_data/hm3d-0.2/hm3d"
