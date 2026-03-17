@@ -60,9 +60,9 @@ def call_openai_api(sys_prompt, contents) -> Optional[str]:
         try:
             if mode == 'gpt':
                 completion = gpt_client.chat.completions.create(
-                    model="gpt-4o",  # model = "deployment_name"
+                    model="gpt-4o-2024-08-06",  # model = "deployment_name"
                     messages=message_text,
-                    temperature=0.95,
+                    temperature=0.7,
                     max_tokens=4096,
                     presence_penalty=0,
                 )

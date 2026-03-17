@@ -16,7 +16,8 @@ prefiltering: true  # whether to use prefiltering (you in fact cannot turn this 
 use_ollama: false
 use_room_filter: true
 use_room_det: true
-use_AVU: false
+use_AVU: true
+AVU_conf_threshold: 0.1
 
 top_k_categories: 20  # keep the top k relevant categories during prefiltering
 frames_to_check: 5

@@ -15,6 +15,8 @@ choose_every_step: true  # whether to query vlm at each step, or only after arri
 egocentric_views: true  # whether to add egocentric views when prompting vlm
 prefiltering: true  # whether to use prefiltering (you in fact cannot turn this off, since otherwise it will exceed the context length limit)
 use_AVU: true
+AVU_conf_threshold: 0.01
+
 use_ollama: false
 use_room_filter: true 
 use_room_det: true

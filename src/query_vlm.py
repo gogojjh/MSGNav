@@ -194,7 +194,7 @@ def query_vlm_for_response(
             return random_frontier_choice(tsdf_planner, n_filtered_snapshots)
         scene.detection_model.set_classes([object_class])
         results = scene.detection_model.predict(
-            target_image, conf=0.01, verbose=False
+            target_image, conf=cfg.AVU_conf_threshold, verbose=False
         )
         
         scene.detection_model.set_classes(scene.obj_classes.get_classes_arr())
