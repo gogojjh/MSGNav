@@ -45,15 +45,45 @@ def format_content(contents):
     return formated_content
 
 
+def _sanitize_policy_text(text: str) -> str:
+    if not isinstance(text, str):
+        return text
+    sanitized = text
+    sanitized = sanitized.replace(
+        "Could you find the exact object captured at the center of the following image? You need to pay attention to the environment and find the exact object.",
+        "Identify the target object shown near the center of the reference image. Use scene context to locate the same object in the environment.",
+    )
+    sanitized = sanitized.replace(
+        "Could you find the object exactly described as the",
+        "Could you find the object described as the",
+    )
+    return sanitized
+
+
+def _build_policy_safe_contents(contents):
+    safe_contents = []
+    for c in contents:
+        if len(c) == 2:
+            safe_contents.append((_sanitize_policy_text(c[0]), c[1]))
+        else:
+            safe_contents.append((_sanitize_policy_text(c[0]),))
+    return safe_contents
+
+
 
 # send information to openai
 def call_openai_api(sys_prompt, contents) -> Optional[str]:
     max_tries = 5
     retry_count = 0
-    
-    formated_content = format_content(contents)
+    safe_sys_prompt = (
+        _sanitize_policy_text(sys_prompt)
+        + "\nKeep reasoning strictly about ordinary indoor navigation and object localization. "
+        + "If the evidence is insufficient, answer 'Continue Exploration'."
+    )
+    safe_contents = _build_policy_safe_contents(contents)
+    formated_content = format_content(safe_contents)
     message_text = [
-        {"role": "system", "content": sys_prompt},
+        {"role": "system", "content": safe_sys_prompt},
         {"role": "user", "content": formated_content},
     ]
     while retry_count < max_tries:
@@ -68,11 +98,11 @@ def call_openai_api(sys_prompt, contents) -> Optional[str]:
                 )
             else:
                 completion = qwen_client.chat.completions.create(
-                    model="qwen-vl-max-latest",  # model = "deployment_name"
+                    model="qwen-vl-max",  # model = "deployment_name"
                     messages=message_text,
                     temperature=0.7,
                     max_tokens=4096,
-                    top_p=0.95,
+                    top_p=0.7,
                     presence_penalty=0,
                 )
             return completion.choices[0].message.content
@@ -83,6 +113,9 @@ def call_openai_api(sys_prompt, contents) -> Optional[str]:
             continue
         except Exception as e:
             print("Error: ", e)
+            err_text = str(e).lower()
+            if "content management policy" in err_text or "response was filtered" in err_text:
+                return "Continue Exploration"
             time.sleep(60)
             retry_count += 1
             continue

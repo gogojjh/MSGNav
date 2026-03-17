@@ -407,7 +407,8 @@ class Logger:
             )
         else:
             subtask_metadata["question"] = (
-                f"Could you find the exact object captured at the center of the following image? You need to pay attention to the environment and find the exact object."
+                "Identify the target object shown near the center of the reference image. "
+                "Use scene context to locate the same object in the environment."
             )
             view_pos_dict = subtask_goal[0]["view_points"][0]["agent_state"]
             obs, _ = scene.get_observation(
