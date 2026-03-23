@@ -1,6 +1,6 @@
 # General
 seed: 77
-exp_name: "gpt4o095_no_topp_goatbench_wAVU_nosafe"
+exp_name: "example_goatbench"
 
 output_parent_dir: "results"
 scene_dataset_config_path: "data/hm3d_annotated_basis.scene_dataset_config.json"
