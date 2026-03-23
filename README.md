@@ -34,15 +34,12 @@
 
 ### 1) Dataset
 
-Step1: Please download the val split of [HM3D](https://github.com/matterport/habitat-matterport-3dresearch) (v1 for GoatBench and v2 for HM3D-ObjNav)
+Step1: Please download the val split of [HM3D_v0.2](https://github.com/matterport/habitat-matterport-3dresearch)
 
 
-For example, if your download path is `/your_path/hm3d/` and it contains:
+For example, if your download path is `/your_path/hm3d/` and it contains: `/your_path/scene_datasets/hm3d/val/`
 
-- v1: `/your_path/scene_datasets/hm3d/val/`
-- v2: `/your_path/versioned_data/hm3d-0.2/val/`
-
-then you can set `scene_data_path` in the config files:
+Then you can set `scene_data_path` in the config files:
 
 - `cfg/eval_goatbench.yaml`
 - `cfg/eval_hm3d.yaml`
