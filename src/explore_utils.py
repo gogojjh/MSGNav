@@ -81,9 +81,10 @@ def call_openai_api(sys_prompt, contents) -> Optional[str]:
         + "If the evidence is insufficient, answer 'Continue Exploration'."
     )
     safe_contents = _build_policy_safe_contents(contents)
-    formated_content = format_content(safe_contents)
+    safe_formated_content = format_content(safe_contents)
+    formated_content = format_content(contents)
     message_text = [
-        {"role": "system", "content": safe_sys_prompt},
+        {"role": "system", "content": sys_prompt},
         {"role": "user", "content": formated_content},
     ]
     while retry_count < max_tries:
@@ -92,10 +93,8 @@ def call_openai_api(sys_prompt, contents) -> Optional[str]:
                 completion = gpt_client.chat.completions.create(
                     model="gpt-4o-2024-08-06",  # model = "deployment_name"
                     messages=message_text,
-                    temperature=0.7,
+                    temperature=0.95,
                     max_tokens=4096,
-                    top_p=0.95,
-                    frequency_penalty=0,
                     presence_penalty=0,
                 )
             else:

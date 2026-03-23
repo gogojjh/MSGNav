@@ -11,6 +11,7 @@
 
 
 ## 📰 News
+- [Mar 23, 2026] 🔄 Codebase updated.
 - [Coming Soon] 🤖 Real-world deployment code for Unitree-G1 will be released.
 - [Mar 16, 2026] The bug on HM3D evaluation has been fixed, and now you can test it on both GoatBench and HM3D benchmarks
 - [Mar 13, 2026] Note: There are some issues with the evaluation code on HM3D, which are currently being fixed. Please try GoatBench first
