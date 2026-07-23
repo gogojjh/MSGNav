@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 # Must be set before importing habitat_sim
 os.environ["HABITAT_SIM_HEADLESS"] = "1"

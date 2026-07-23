@@ -1,3 +1,4 @@
+from __future__ import annotations
 import openai
 from openai import OpenAI
 from PIL import Image
@@ -6,7 +7,6 @@ from io import BytesIO
 import os
 import random
 import time
-from typing import Optional
 import logging
 import numpy as np 
 import heapq
@@ -14,8 +14,8 @@ import ollama
 import re
 from src.utils import resize_image
 from src.const import *
-END_POINT = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-OPENAI_KEY = "sk-79813f085233441f8b86bac4cb411786"
+END_POINT = Qwen_END_POINT
+OPENAI_KEY = Qwen_OPENAI_KEY
 
 client = OpenAI(
     base_url=END_POINT,
@@ -89,15 +89,14 @@ def format_content(contents):
     return formated_content
 
 # send information to openai
-def call_openai_api(sys_prompt, contents) -> Optional[str]:
-    max_tries = 5
+def call_openai_api(sys_prompt, contents) -> str:
     retry_count = 0
     formated_content = format_content(contents)
     message_text = [
         {"role": "system", "content": sys_prompt},
         {"role": "user", "content": formated_content},
     ]
-    while retry_count < max_tries:
+    while True:
         try:
             completion = client.chat.completions.create(
                 model="qwen-vl-max",  # model = "deployment_name"
@@ -109,27 +108,27 @@ def call_openai_api(sys_prompt, contents) -> Optional[str]:
             )
             return completion.choices[0].message.content
         except openai.RateLimitError as e:
-            print("Rate limit error, waiting for 60s")
+            retry_count += 1
+            print(f"Rate limit error, waiting for 30s (attempt {retry_count})")
             time.sleep(30)
-            retry_count += 1
             continue
+        except openai.AuthenticationError as e:
+            print(f"Authentication error, API key is invalid: {e}")
+            raise
         except Exception as e:
-            print("Error: ", e)
-            time.sleep(60)
             retry_count += 1
+            print(f"Error: {e}, waiting for 60s (attempt {retry_count})")
+            time.sleep(60)
             continue
 
-    return None
-
-def call_openai_api_sg(sys_prompt, contents) -> Optional[str]:
-    max_tries = 5
+def call_openai_api_sg(sys_prompt, contents) -> str:
     retry_count = 0
     formated_content = format_content(contents)
     message_text = [
         {"role": "system", "content": sys_prompt},
         {"role": "user", "content": formated_content},
     ]
-    while retry_count < max_tries:
+    while True:
         try:
             completion = client.chat.completions.create(
                 model="qwen3-235b-a22b-instruct-2507",  # model = "deployment_name"
@@ -141,17 +140,18 @@ def call_openai_api_sg(sys_prompt, contents) -> Optional[str]:
             )
             return completion.choices[0].message.content
         except openai.RateLimitError as e:
-            print("Rate limit error, waiting for 60s")
+            retry_count += 1
+            print(f"Rate limit error, waiting for 30s (attempt {retry_count})")
             time.sleep(30)
-            retry_count += 1
             continue
+        except openai.AuthenticationError as e:
+            print(f"Authentication error, API key is invalid: {e}")
+            raise
         except Exception as e:
-            print("Error: ", e)
-            time.sleep(60)
             retry_count += 1
+            print(f"Error: {e}, waiting for 60s (attempt {retry_count})")
+            time.sleep(60)
             continue
-
-    return None
 
 def save_image(image, save_path):
     """Save an image from various formats (base64, PIL, numpy) to a file"""

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import openai
 from openai import OpenAI
 from PIL import Image
@@ -6,7 +7,6 @@ from io import BytesIO
 import os
 import random
 import time
-from typing import Optional
 import logging
 import numpy as np 
 import heapq
@@ -72,8 +72,7 @@ def _build_policy_safe_contents(contents):
 
 
 # send information to openai
-def call_openai_api(sys_prompt, contents) -> Optional[str]:
-    max_tries = 5
+def call_openai_api(sys_prompt, contents) -> str:
     retry_count = 0
     safe_sys_prompt = (
         _sanitize_policy_text(sys_prompt)
@@ -87,7 +86,7 @@ def call_openai_api(sys_prompt, contents) -> Optional[str]:
         {"role": "system", "content": sys_prompt},
         {"role": "user", "content": formated_content},
     ]
-    while retry_count < max_tries:
+    while True:
         try:
             if mode == 'gpt':
                 completion = gpt_client.chat.completions.create(
@@ -108,20 +107,21 @@ def call_openai_api(sys_prompt, contents) -> Optional[str]:
                 )
             return completion.choices[0].message.content
         except openai.RateLimitError as e:
-            print("Rate limit error, waiting for 60s")
-            time.sleep(30)
             retry_count += 1
+            print(f"Rate limit error, waiting for 30s (attempt {retry_count})")
+            time.sleep(30)
             continue
+        except openai.AuthenticationError as e:
+            print(f"Authentication error, API key is invalid: {e}")
+            raise
         except Exception as e:
-            print("Error: ", e)
             err_text = str(e).lower()
             if "content management policy" in err_text or "response was filtered" in err_text:
                 return "Continue Exploration"
-            time.sleep(60)
             retry_count += 1
+            print(f"Error: {e}, waiting for 60s (attempt {retry_count})")
+            time.sleep(60)
             continue
-
-    return None
 
 
 def save_image(image, save_path):

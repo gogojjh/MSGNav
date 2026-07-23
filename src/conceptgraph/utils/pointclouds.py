@@ -8,6 +8,7 @@ https://github.com/gradslam/gradslam
 I'm just removing the gradslam dependency to make conceptgraphs easier to install.
 
 """
+from __future__ import annotations
 
 from typing import List, Optional, Union
 

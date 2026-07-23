@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 from src.conceptgraph.utils.general_utils import measure_time
 

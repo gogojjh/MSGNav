@@ -1,3 +1,4 @@
+from __future__ import annotations
 def prepare_goatbench_navigation_goals(
     scene_name,
     episode,

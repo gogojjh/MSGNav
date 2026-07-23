@@ -1,4 +1,5 @@
 # Some utility functions for AI2Thor environment
+from __future__ import annotations
 import copy
 from typing import Tuple
 from PIL import Image

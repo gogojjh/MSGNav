@@ -1,3 +1,4 @@
+from __future__ import annotations
 import numpy as np
 from record3d import Record3DStream
 from threading import Event

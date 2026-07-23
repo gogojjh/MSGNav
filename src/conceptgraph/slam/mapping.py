@@ -1,3 +1,4 @@
+from __future__ import annotations
 from src.conceptgraph.utils.logging_metrics import MappingTracker
 import torch
 import torch.nn.functional as F

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import numpy as np
 import random
 import scipy.ndimage as ndimage
