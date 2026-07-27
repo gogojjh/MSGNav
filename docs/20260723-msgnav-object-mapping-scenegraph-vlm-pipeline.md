@@ -67,3 +67,42 @@ flowchart TD
 3. **边不存文本，存图像**：`rel_img` 只是不断累积「该关系被观测到的原始 RGB 帧文件名」，无固定文本关系标签（legacy 的 `update_scene_graph_edges_concept` 会调用 LLM 生成文本 caption，但主流程未启用）
 4. **动态分配 = 查询期的图像选择**：并非每条边固定绑定一张图，而是在 KSS 阶段用贪心加权集合覆盖算法，从 `rel_img` 候选池中挑选覆盖所有待展示关系所需的最少图像集合，再喂给 VLM——这是论文中"动态分配图像"的真正含义
 5. **边的失效清理**：`del_unused_scene_graph_edges` 会在物体因全局去噪/合并被移除后，同步清理挂在其上的边
+
+---
+
+## 三、导航流程中的VLM调用点梳理
+
+MSGNav 每一步导航决策会**分阶段轮流调用同一个VLM（GPT-4o 或 Qwen-VL-Max，`src/const.py:7` `API_MODE` 切换）**，而不是一次调用产出所有结果。所有请求最终都经过统一入口 `call_openai_api`（`src/explore_utils.py:75`），返回纯文本，由不同上层函数各自解析。**场景图边的构建本身不调用VLM**（见上文，纯几何+CLIP规则），VLM只在推理阶段被动读取边及其引用图像。
+
+```mermaid
+flowchart TD
+    A["每步导航循环开始"] --> B{"tsdf_planner.max_point\n是否已确定？"}
+    B -- 否，需要新决策 --> C["① Prefiltering 相关物体预筛选\nget_prefiltering_objs → explore_utils.py:677"]
+    C --> D["② Key Subgraph Selection 主决策\n(含AVU自适应词表 + CLR闭环推理)\nexplore_two_step → explore_utils.py:856"]
+    D --> E{"VLM返回类型？"}
+    E -- "object i / image i,category" --> F["锁定目标（物体或图像目标）\n若为image：用YOLO+SAM重感知，非VLM调用"]
+    E -- "continue exploration" --> G["③ Frontier选择\nformat_exploreonly_prompt → explore_utils.py:908"]
+    G --> H["选中frontier，继续移动"]
+    F --> I["执行动作，逼近目标"]
+    B -- 是，正在逼近目标 --> J{"target_type != frontier\n且 target_arrived？"}
+    J -- 是 --> K["④ Task Check 终止判断\ntask_check → explore_utils.py:972"]
+    K --> L{"VLM返回 yes/no"}
+    L -- yes --> M["判定到达目标，导航结束"]
+    L -- no --> N["继续导航，进入下一步循环"]
+    J -- 否 --> I
+```
+
+### 各VLM调用点的输入/输出
+
+| 步骤 | 调用函数 / 位置 | 输入 | 输出 |
+|---|---|---|---|
+| **① Prefiltering**<br>相关物体预筛选 | `get_prefiltering_objs`<br>`explore_utils.py:677`（KSS第一子步骤） | 无图像（image-goal任务时附1张目标图）；文本＝完整物体列表（每个物体的id/class_name/room_label/邻接物体id）+ 任务question | 纯文本，每行一个物体id → 解析为`selected_objs`（top_k个候选物体id列表），供下一步构建关键子图 |
+| **② Key Subgraph Selection 主决策**（含AVU词表更新+CLR闭环推理） | `explore_two_step`<br>`explore_utils.py:856`，prompt由`Prompt_with_AVU_and_CLR`(`:207`)或`Prompt_without_AVU`(`:354`)构造 | 图像：KSS贪心集合覆盖选出的关系关键帧（`edge_pruning_KSS`产出）+ 当前自我中心视图(egocentric_views)，数量=processed_images数+egocentric_imgs数；文本：question(+可选目标图)、候选物体属性(id/name/坐标/room_label)、关系属性(边+引用图像编号)、CLR历史决策（此前每步选过的object/image/frontier及是否失败） | 纯文本两行：第一行`"object i"` / `"image i, category"` / `"continue exploration"`；第二行reasoning。若为"image"，`i`为图像编号、`category`为AVU待识别目标类别词 |
+| **③ Frontier选择**（仅当②返回continue exploration时触发） | `format_exploreonly_prompt`(`:495`) + 调用于`explore_utils.py:908`（`explore_two_step`内层循环） | 图像：所有frontier对应的视图特征；文本：question(+目标图) | 纯文本`"frontier i"`+reason，i为选中frontier下标 |
+| **④ Task Check 终止判断** | `task_check`<br>`explore_utils.py:945`，调用于`:972`，由`query_vlm_for_response_end`(`query_vlm.py:325`)触发 | 图像：最近`cfg.frames_to_check`步的自我中心观测帧（按step分组）；文本：question(+目标图)，**不含**场景图/物体/边信息 | 纯文本`"yes"`/`"no"`+reason。yes→判定已到达目标、终止导航；no→继续下一步循环 |
+
+### 关键说明
+- **①②③是同一次决策流程内按需触发的最多3类独立VLM请求**，不是一次调用返回多个字段——若②已选中object/image目标，则不再触发③；只有②判定"continue exploration"才会调用③。
+- **场景图关系(边)没有独立的VLM推理步骤**：边由建图阶段的空间邻近规则生成（见上文"二、Scene Graph构建流程图"），VLM仅在②中读取边列表+引用图像做被动推理，不为"判断A和B关系"单独发起请求。
+- **房间分类不算VLM调用**：`room_label`/`room_conf`由CLIP相似度比对得到（`multimodal_3d_scene_graph.py:331-344`），只是作为文本字段传入②的prompt供VLM参考。
+- 图像来源始终是真实观测帧（当前自我中心视图 或 历史关键帧/边引用图像），没有渲染或合成图像。
